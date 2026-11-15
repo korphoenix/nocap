@@ -1,13 +1,20 @@
 <script setup lang="ts">
 useHead({ title: 'LINE LIFF 測試' })
 
-const liffId = useRuntimeConfig().public.liffId.trim()
-const profile = ref<{ userId: string; pictureUrl?: string }>()
-const status = ref<'loading' | 'login' | 'missing' | 'error' | 'ready'>(liffId ? 'loading' : 'missing')
+const config = useRuntimeConfig()
+const liffId = config.public.liffId.trim()
+const mockEnabled = String(config.public.liffMock) === 'true'
+const profile = ref<{ userId: string; pictureUrl?: string }>(mockEnabled ? {
+  userId: 'U00000000000000000000000000000000',
+  pictureUrl: config.app.baseURL + 'assets/line-mock-avatar.png',
+} : undefined)
+const status = ref<'loading' | 'login' | 'missing' | 'error' | 'ready'>(
+  mockEnabled ? 'ready' : liffId ? 'loading' : 'missing',
+)
 let login: (() => void) | undefined
 
 onMounted(async () => {
-  if (!liffId) return
+  if (mockEnabled || !liffId) return
 
   try {
     const { default: liff } = await import('@line/liff')
@@ -33,7 +40,7 @@ onMounted(async () => {
       <img v-if="profile.pictureUrl" :src="profile.pictureUrl" alt="LINE 大頭照" width="112" height="112" referrerpolicy="no-referrer">
       <p v-else>此帳號沒有設定大頭照</p>
       <dl>
-        <dt>LINE 使用者 ID</dt>
+        <dt>{{ mockEnabled ? 'LINE 使用者 ID（測試）' : 'LINE 使用者 ID' }}</dt>
         <dd>{{ profile.userId }}</dd>
       </dl>
     </template>

@@ -7,3 +7,5 @@
 `npm run build` 建置後可用 `node .output/server/index.mjs` 啟動。兌換目前延用測試版，在前端抽取並使用測試密碼 `1121`，正式活動需另接後端核銷。
 
 首頁 `/` 是 LIFF 個人資料測試頁。請在 LIFF 設定勾選 `profile` 權限。登入後畫面只顯示 LINE 使用者 ID 和大頭照。原活動頁可從 `/poster` 開啟。
+
+將 `NUXT_PUBLIC_LIFF_MOCK=true` 加入 `.env` 並重啟開發伺服器，首頁就會顯示範例 ID 與大頭照。部署時可透過同名環境變數切換，設為 `false` 即使用實際 LIFF。

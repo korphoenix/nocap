@@ -3,6 +3,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       liffId: '',
+      liffMock: '',
     },
   },
   app: {
