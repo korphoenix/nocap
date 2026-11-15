@@ -8,22 +8,17 @@ const profile = ref<{ userId: string; pictureUrl?: string }>(mockEnabled ? {
   userId: 'U00000000000000000000000000000000',
   pictureUrl: config.app.baseURL + 'assets/line-mock-avatar.png',
 } : undefined)
-const status = ref<'loading' | 'login' | 'missing' | 'error' | 'ready'>(
+const status = ref<'loading' | 'missing' | 'error' | 'ready'>(
   mockEnabled ? 'ready' : liffId ? 'loading' : 'missing',
 )
-let login: (() => void) | undefined
 
 onMounted(async () => {
   if (mockEnabled || !liffId) return
 
   try {
     const { default: liff } = await import('@line/liff')
-    await liff.init({ liffId })
-    if (!liff.isLoggedIn()) {
-      login = () => liff.login()
-      status.value = 'login'
-      return
-    }
+    await liff.init({ liffId, withLoginOnExternalBrowser: true })
+    if (!liff.isLoggedIn()) return
 
     const { userId, pictureUrl } = await liff.getProfile()
     profile.value = { userId, pictureUrl }
@@ -44,7 +39,6 @@ onMounted(async () => {
         <dd>{{ profile.userId }}</dd>
       </dl>
     </template>
-    <button v-else-if="status === 'login'" type="button" @click="login?.()">使用 LINE 登入</button>
     <p v-else-if="status === 'missing'">尚未設定 LIFF ID。</p>
     <p v-else-if="status === 'error'">無法取得 LINE 個人資料，請確認 LIFF 設定與 profile 權限後重新開啟。</p>
     <p v-else>正在讀取 LINE 個人資料…</p>
@@ -56,5 +50,4 @@ onMounted(async () => {
 img { border-radius: 50%; object-fit: cover; }
 dl { max-width: 100%; }
 dd { margin: 6px 0 0; overflow-wrap: anywhere; }
-button { padding: 12px 20px; border: 0; border-radius: 8px; background: #06a449; color: white; font: inherit; cursor: pointer; }
 </style>
