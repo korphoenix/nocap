@@ -12,3 +12,6 @@
 .env
 .env.*
 !.env.example
+
+# Local deliverables
+/outputs/
