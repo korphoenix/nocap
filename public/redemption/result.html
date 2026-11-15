@@ -1,0 +1,38 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><title>NOCAP 統一結果版型</title>
+<style>
+@font-face{font-family:Noto;src:url('assets/NotoSansTC-VF.ttf')}*{box-sizing:border-box}html,body{margin:0;background:#171717}#page{position:relative;width:793px;height:1983px;overflow:hidden;font-family:Noto,Arial,sans-serif}#page>*{position:absolute}.background{inset:0;width:793px;height:1983px}.cross{left:668px;top:562px;width:38px;height:38px}.cross:before,.cross:after{content:'';position:absolute;left:17px;top:-6px;width:4px;height:50px;background:#0739f6;transform:rotate(45deg)}.cross:after{transform:rotate(-45deg)}
+.headline{left:110px;top:625px;width:573px;height:114px;display:flex;align-items:center;justify-content:center;font-size:86px;font-weight:950;font-style:italic;white-space:nowrap;color:#0739f6;letter-spacing:-5px;transform:skewX(-5deg)}
+.underline{left:247px;top:747px;width:245px;height:18px;border-top:7px solid #fb8c26;border-radius:60%;transform:rotate(-8deg)}
+.ribbons{left:83px;top:815px;width:627px;height:326px;object-fit:fill}
+.prize{left:213px;top:797px;width:367px;height:365px;overflow:hidden}
+.prize img{position:absolute;max-width:none}
+.rule{top:1212px;height:3px;width:84px;background:#0739f6}.rule.left{left:116px}.rule.right{left:593px}
+.name{left:214px;top:1177px;width:365px;height:66px;display:flex;align-items:center;justify-content:center;color:#0739f6;font-size:51px;font-weight:950;font-style:italic;white-space:nowrap;letter-spacing:-1px}
+.name.english{font-family:Arial,sans-serif;font-size:36px;font-weight:900}.name.coupon{font-size:33px}
+.sub{left:214px;top:1235px;width:365px;height:36px;text-align:center;color:#0739f6;font:bold italic 31px Arial;white-space:nowrap}
+.qr{left:266.5px;top:1290px;width:260px;height:260px;border-radius:34px;background:linear-gradient(130deg,#dcdae7,#d9d8e5);display:flex;align-items:center;justify-content:center;color:#475a79;font-size:37px;font-weight:600;letter-spacing:2px}
+.instructions{left:150px;top:1573px;width:493px;height:69px;text-align:center;font-size:29px;line-height:35px;font-weight:600;letter-spacing:1px;color:#101010}
+.footer{left:150px;top:1653px;width:493px;height:32px;text-align:center;font-size:25px;line-height:32px;letter-spacing:3px;color:#415570;font-weight:600}
+.headline.special{flex-direction:column;gap:8px;letter-spacing:-1px;transform:skewX(-5deg)}
+.headline.special .special-en{font:900 italic 54px/56px Arial,sans-serif}
+.headline.special .special-zh{font-size:47px;line-height:50px;font-weight:950;letter-spacing:1px}
+.name.cup{font-size:30px;letter-spacing:-.5px}
+.prize.blow{overflow:visible}
+html,body{background:transparent;overflow:hidden}#page{transform:translateY(-520px);overflow:visible}.background{left:40px;top:520px;width:710px;height:1210px}.cross{cursor:pointer}</style><link rel="stylesheet" href="redeem.css"><div id="page"><img class="background" src="assets/paper.png"><button class="cross" type="button" aria-label="關閉" style="border:0;background:transparent"></button><div class="headline"></div><div class="underline"></div><img class="ribbons" src="assets/ribbons.png"><div class="prize"><img id="product"></div><div class="rule left"></div><div class="rule right"></div><div class="name"></div><div class="sub"></div><a class="result-ig" href="https://www.instagram.com/nocap_taipei" target="_blank" rel="noopener">兌換前，請先追蹤 NOCAP IG ↗</a><div class="redeem-area"><button type="button">兌換驚喜</button><form hidden><label for="staff-pin">店員輸入兌換密碼</label><input id="staff-pin" type="password" inputmode="numeric" autocomplete="off" enterkeyhint="done"><button type="submit">確認</button></form><output hidden>已兌換</output></div><div class="ig-note">兌換時請同時出示 IG 追蹤畫面</div><div aria-live="polite" class="instructions">兌換時請同時出示<br>IG 追蹤畫面。</div><div class="footer">每人一次・當日兌換</div></div>
+<script>if (self !== top && new URLSearchParams(location.search).get("paper") !== "1") document.documentElement.classList.add("in-dialog");</script><script src="prize-layout.js"></script><script>
+const items=[{"id":"coupon-8","name":"單筆消費全品項8折","sub":""},{"id":"special-01-tomato-drama","name":"紅色大戲","sub":"Tomato Drama"},{"id":"special-02-yuzu-you-know","name":"柚 你懂的","sub":"Yuzu You Know"},{"id":"special-03-grape-escape","name":"葡萄大逃亡","sub":"Grape Escape"},{"id":"special-04-pineapple-express","name":"菠蘿快遞","sub":"Pineapple Express"},{"id":"special-05-peach-please","name":"桃小姐拜託","sub":"Peach Please"},{"id":"special-06-rhythm-boy","name":"節奏仔","sub":"Rhythm Boy"},{"id":"special-07-mr-bougie","name":"裝B先生","sub":"Mr.Bougie"},{"id":"special-08-social-overdose","name":"社交過載","sub":"Social Overdose"},{"id":"special-09-blow-shot","name":"Blow Shot","sub":"（2 SHOTS）"},{"id":"bomb-01-oligo-bomb","name":"Oligo Bomb","sub":""},{"id":"bomb-02-vitali-bomb","name":"Vitali Bomb","sub":""},{"id":"bomb-03-apple-sidra-bomb","name":"Apple Sidra Bomb","sub":""},{"id":"bomb-04-tequila-bomb","name":"Tequila Bomb","sub":""},{"id":"bomb-05-jager-bomb","name":"Jäger Bomb","sub":""},{"id":"coupon-6","name":"單筆消費全品項6折","sub":""},{"id":"cup-blue","name":"1+1特調任選一杯免費","sub":""},{"id":"cup-clear","name":"指定飲品任選一杯免費","sub":""}];
+window.items=items;
+window.render=async function(id){if(typeof resetRedemption==="function")resetRedemption();
+const p=items.find(p=>p.id===id)||items[0];const headline=document.querySelector('.headline');
+const special=p.id.startsWith('special-')&&!p.id.includes('blow-shot');
+headline.className='headline'+(special?' special':'');
+if(special){headline.innerHTML='<span class="special-en">NOCAP SPECIAL!</span><span class="special-zh">這杯我們請!</span>';}else{headline.textContent=p.id.startsWith('coupon')?'今晚享優惠！':'這杯我們請！';}
+document.querySelector('.prize').className='prize'+(p.id.includes('blow-shot')?' blow':'');
+const n=document.querySelector('.name');n.textContent=p.name;n.className='name'+(p.id.startsWith('bomb')||p.id.includes('blow-shot')?' english':'')+(p.id.startsWith('coupon')?' coupon':'')+(p.id.startsWith('cup-')?' cup':'');
+document.querySelector('.sub').textContent=p.sub;
+const img=document.getElementById('product');img.src='assets/'+p.id+'.png';await img.decode();
+const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0);const data=ctx.getImageData(0,0,c.width,c.height).data;let x0=c.width,y0=c.height,x1=0,y1=0;for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){if(data[(y*c.width+x)*4+3]>35){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y)}}
+const scaleBoost=p.id.includes('blow-shot')?1.25:1;const s=Math.min(330/(x1-x0+1),310/(y1-y0+1))*scaleBoost;img.style.width=c.width*s+'px';img.style.height=c.height*s+'px';img.style.left=((367-(x1-x0+1)*s)/2-x0*s)+'px';img.style.top=((365-(y1-y0+1)*s)/2-y0*s)+'px';
+alignPrize(p.id,img);await document.fonts.ready;window.currentPrize=p.id;};
+window.ready=window.render(new URLSearchParams(location.search).get('prize'));
+document.querySelector('.cross').addEventListener('click',()=>parent.postMessage('close-result',location.origin));document.addEventListener('keydown',e=>{if(e.key==='Escape')parent.postMessage('close-result',location.origin)});</script><script src="redeem.js"></script></html>

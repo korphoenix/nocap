@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Local working files
+/work/
+
+# Nuxt and local configuration
+/node_modules/
+/.nuxt/
+/.output/
+/.data/
+.env
+.env.*
+!.env.example

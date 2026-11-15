@@ -1,0 +1,15 @@
+{
+  "name": "nocap-liff",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview"
+  },
+  "dependencies": {
+    "@line/liff": "^2.31.1",
+    "nuxt": "^4.0.0",
+    "vue": "^3.5.0"
+  }
+}
