@@ -1,53 +1,53 @@
 <script setup lang="ts">
-useHead({ title: 'LINE LIFF 測試' })
+const title = 'NOCAP OPEN FREQUENCY｜11/21 開幕'
+const description = '11/21，NOCAP 在 MAJI・TAIPEI 開幕。到現場掃碼，解鎖你的開幕驚喜。獎品限現場兌換。'
 
-const config = useRuntimeConfig()
-const liffId = config.public.liffId.trim()
-const mockEnabled = String(config.public.liffMock) === 'true'
-const profile = ref<{ userId: string; pictureUrl?: string }>(mockEnabled ? {
-  userId: 'U00000000000000000000000000000000',
-  pictureUrl: config.app.baseURL + 'assets/line-mock-avatar.png',
-} : undefined)
-const status = ref<'loading' | 'missing' | 'error' | 'ready'>(
-  mockEnabled ? 'ready' : liffId ? 'loading' : 'missing',
-)
+const image = 'https://nocap-grand-opening.vercel.app/assets/nocap-og-logo.png'
+const imageAlt = 'NOCAP Logo'
 
-onMounted(async () => {
-  if (mockEnabled || !liffId) return
-
-  try {
-    const { default: liff } = await import('@line/liff')
-    await liff.init({ liffId, withLoginOnExternalBrowser: true })
-    if (!liff.isLoggedIn()) return
-
-    const { userId, pictureUrl } = await liff.getProfile()
-    profile.value = { userId, pictureUrl }
-    status.value = 'ready'
-  } catch {
-    status.value = 'error'
-  }
+useSeoMeta({
+  title,
+  description,
+  ogTitle: title,
+  ogDescription: description,
+  ogImage: image,
+  ogImageAlt: imageAlt,
+  ogImageWidth: 1200,
+  ogImageHeight: 630,
+  twitterCard: 'summary_large_image',
+  twitterImage: image,
+  twitterImageAlt: imageAlt,
+  twitterTitle: title,
+  twitterDescription: description,
 })
+
+const { app } = useRuntimeConfig()
 </script>
 
 <template>
-  <main class="liff-test" aria-live="polite">
-    <template v-if="profile">
-      <img v-if="profile.pictureUrl" :src="profile.pictureUrl" alt="LINE 大頭照" width="112" height="112" referrerpolicy="no-referrer">
-      <p v-else>此帳號沒有設定大頭照</p>
-      <dl>
-        <dt>{{ mockEnabled ? 'LINE 使用者 ID（測試）' : 'LINE 使用者 ID' }}</dt>
-        <dd>{{ profile.userId }}</dd>
-      </dl>
-    </template>
-    <p v-else-if="status === 'missing'">尚未設定 LIFF ID。</p>
-    <p v-else-if="status === 'error'">無法取得 LINE 個人資料，請確認 LIFF 設定與 profile 權限後重新開啟。</p>
-    <p v-else>正在讀取 LINE 個人資料…</p>
+  <main class="announcement">
+    <img
+      :src="app.baseURL + 'assets/opening-announcement.png'"
+      alt="NOCAP Open Frequency。抽獎網站準備中，將於 11 月 20 日（五）前上線。屆時再掃碼，就能解鎖你的開幕驚喜。現場兌換。"
+      fetchpriority="high"
+    >
   </main>
 </template>
 
 <style scoped>
-.liff-test { position: fixed; inset: 0; display: grid; place-content: center; justify-items: center; padding: 24px; background: #fff; color: #151515; text-align: center; font-family: system-ui, sans-serif; }
-img { border-radius: 50%; object-fit: cover; }
-dl { max-width: 100%; }
-dd { margin: 6px 0 0; overflow-wrap: anywhere; }
+.announcement {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #050750;
+}
+
+.announcement img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: contain;
+}
 </style>

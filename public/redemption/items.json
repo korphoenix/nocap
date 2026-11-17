@@ -1,1 +1,20 @@
-[{"id":"coupon-8","name":"單筆消費全品項8折","sub":""},{"id":"special-01-tomato-drama","name":"紅色大戲","sub":"Tomato Drama"},{"id":"special-02-yuzu-you-know","name":"柚 你懂的","sub":"Yuzu You Know"},{"id":"special-03-grape-escape","name":"葡萄大逃亡","sub":"Grape Escape"},{"id":"special-04-pineapple-express","name":"菠蘿快遞","sub":"Pineapple Express"},{"id":"special-05-peach-please","name":"桃小姐拜託","sub":"Peach Please"},{"id":"special-06-rhythm-boy","name":"節奏仔","sub":"Rhythm Boy"},{"id":"special-07-mr-bougie","name":"裝B先生","sub":"Mr.Bougie"},{"id":"special-08-social-overdose","name":"社交過載","sub":"Social Overdose"},{"id":"special-09-blow-shot","name":"Blow Shot","sub":"（2 SHOTS）"},{"id":"bomb-01-oligo-bomb","name":"Oligo Bomb","sub":""},{"id":"bomb-02-vitali-bomb","name":"Vitali Bomb","sub":""},{"id":"bomb-03-apple-sidra-bomb","name":"Apple Sidra Bomb","sub":""},{"id":"bomb-04-tequila-bomb","name":"Tequila Bomb","sub":""},{"id":"bomb-05-jager-bomb","name":"Jäger Bomb","sub":""},{"id":"coupon-6","name":"單筆消費全品項6折","sub":""},{"id":"cup-blue","name":"1+1特調任選一杯免費","sub":""},{"id":"cup-clear","name":"指定飲品任選一杯免費","sub":""}]
+[
+  {"id": "coupon-8","name": "單筆消費全品項8折","sub": "","chancePercent": 35},
+  {"id": "special-01-tomato-drama","name": "紅色大戲","sub": "Tomato Drama","chancePercent": 3},
+  {"id": "special-02-yuzu-you-know","name": "柚 你懂的","sub": "Yuzu You Know","chancePercent": 3},
+  {"id": "special-03-grape-escape","name": "葡萄大逃亡","sub": "Grape Escape","chancePercent": 3},
+  {"id": "special-04-pineapple-express","name": "菠蘿快遞","sub": "Pineapple Express","chancePercent": 3},
+  {"id": "special-05-peach-please","name": "桃小姐拜託","sub": "Peach Please","chancePercent": 3},
+  {"id": "special-06-rhythm-boy","name": "節奏仔","sub": "Rhythm Boy","chancePercent": 3},
+  {"id": "special-07-mr-bougie","name": "裝B先生","sub": "Mr.Bougie","chancePercent": 3},
+  {"id": "special-08-social-overdose","name": "社交過載","sub": "Social Overdose","chancePercent": 3},
+  {"id": "special-09-blow-shot","name": "Blow Shot","sub": "（2 SHOTS）","chancePercent": 3},
+  {"id": "bomb-01-oligo-bomb","name": "Oligo Bomb","sub": "","chancePercent": 3},
+  {"id": "bomb-02-vitali-bomb","name": "Vitali Bomb","sub": "","chancePercent": 3},
+  {"id": "bomb-03-apple-sidra-bomb","name": "Apple Sidra Bomb","sub": "","chancePercent": 3},
+  {"id": "bomb-04-tequila-bomb","name": "Tequila Bomb","sub": "","chancePercent": 3},
+  {"id": "bomb-05-jager-bomb","name": "Jäger Bomb","sub": "","chancePercent": 3},
+  {"id": "coupon-6","name": "單筆消費全品項6折","sub": "","chancePercent": 15},
+  {"id": "cup-blue","name": "1+1特調任選一杯免費","sub": "","chancePercent": 4},
+  {"id": "cup-clear","name": "指定飲品任選一杯免費","sub": "","chancePercent": 4}
+]

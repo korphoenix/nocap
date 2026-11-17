@@ -1,6 +1,10 @@
 export default defineNuxtConfig({
   devtools: { enabled: false },
   runtimeConfig: {
+    lineChannelId: '2012620913',
+    supabaseUrl: 'https://iucrtdzxibklrkelpvzv.supabase.co',
+    supabaseSecretKey: '',
+    redemptionPin: '',
     public: {
       liffId: '',
       liffMock: '',
