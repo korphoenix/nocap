@@ -49,5 +49,6 @@ const { app } = useRuntimeConfig()
   height: 100%;
   min-height: 0;
   object-fit: contain;
+  object-position: center top;
 }
 </style>
