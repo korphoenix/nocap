@@ -6,7 +6,7 @@ type LineProfile = {
   user_name: string | null
 }
 type Draw = Partial<LineProfile> & { prize_id: string; redeemed_at: string | null }
-const eventId = 'nocap-grand-opening-2026'
+export const eventId = 'nocap-grand-opening-2026'
 let mockDraw: Draw | undefined
 
 export function isMock(event: H3Event) {

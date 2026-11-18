@@ -5,6 +5,7 @@ export default defineNuxtConfig({
     supabaseUrl: 'https://iucrtdzxibklrkelpvzv.supabase.co',
     supabaseSecretKey: '',
     redemptionPin: '',
+    adminPassword: '',
     public: {
       liffId: '',
       liffMock: '',

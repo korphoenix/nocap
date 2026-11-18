@@ -3,7 +3,8 @@
 (() => {
   const source = document.querySelector('img.ribbons');
   if (!source) return;
-  document.documentElement.classList.add('motion-pending');
+  const skipReveal = new URLSearchParams(location.search).get('redeemed') === '1';
+  if (!skipReveal) document.documentElement.classList.add('motion-pending');
   const pieces = [
     {box:[.105,.10,.075,.145], duration:4.1, drift:-9, turn:9},
     {box:[.01,.211,.15,.345], duration:5.3, drift:12, turn:-7},
@@ -38,6 +39,7 @@
     root.append(slot);
   });
   source.replaceWith(root);
+  if (skipReveal) return;
   // Start content and ribbons on the same clock after prize layout and images load.
   const ready = [window.ready, ...Array.from(root.querySelectorAll('img'), img => img.decode())];
   Promise.allSettled(ready).then(() => {

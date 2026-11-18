@@ -21,6 +21,7 @@ function showRedeemed() {
   start.hidden = true;
   form.hidden = true;
   confirmation.hidden = false;
+  if (self !== top) parent.postMessage('prize-redeemed', location.origin);
   password.value = '';
   instructions.textContent = '兌換成功，可隨時查看這份驚喜。';
 }
@@ -60,5 +61,9 @@ form.addEventListener('submit', async event => {
   }
 });
 resetRedemption();
-void checkRedemption();
+if (new URLSearchParams(location.search).get('redeemed') === '1') {
+  showRedeemed();
+} else {
+  void checkRedemption();
+}
 window.addEventListener('focus', checkRedemption);
