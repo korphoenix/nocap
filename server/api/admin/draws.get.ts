@@ -3,6 +3,7 @@ import prizes from '../../../public/redemption/items.json'
 const pageSize = 50
 
 type Draw = {
+  record_id: string
   line_user_id: string
   user_name: string | null
   prize_id: string
@@ -20,12 +21,12 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const response = await $fetch.raw<Draw[]>(new URL('/rest/v1/event_draws', supabaseUrl).href, {
+    const response = await $fetch.raw<Draw[]>(new URL('/rest/v1/admin_event_draws', supabaseUrl).href, {
       headers: { apikey: supabaseSecretKey, Prefer: 'count=exact' },
       query: {
         event_id: 'eq.' + eventId,
-        select: 'line_user_id,user_name,prize_id,drawn_at,redeemed_at',
-        order: 'drawn_at.desc,line_user_id.asc',
+        select: 'record_id,line_user_id,user_name,prize_id,drawn_at,redeemed_at',
+        order: 'drawn_at.desc,record_id.asc',
         limit: pageSize,
         offset: (page - 1) * pageSize,
         ...(query.status === 'redeemed' ? { redeemed_at: 'not.is.null' } :
@@ -37,7 +38,7 @@ export default defineEventHandler(async (event) => {
     const users = draws.length ? await $fetch<{ line_user_id: string; first_login_at: string }[]>(
       new URL('/rest/v1/line_users', supabaseUrl).href, {
         headers: { apikey: supabaseSecretKey },
-        query: { select: 'line_user_id,first_login_at', line_user_id: 'in.(' + draws.map(row => row.line_user_id).join(',') + ')' },
+        query: { select: 'record_id,line_user_id,first_login_at', line_user_id: 'in.(' + draws.map(row => row.line_user_id).join(',') + ')' },
         timeout: 8000,
       },
     ) : []

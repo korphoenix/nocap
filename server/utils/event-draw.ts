@@ -68,12 +68,12 @@ export async function eventDraw(event: H3Event, action: 'draw' | 'redraw' | 'sta
 
   try {
     if (action === 'redraw') {
-      const [draw] = await $fetch<Draw[]>(url.href, {
+      const [draw] = await $fetch<Draw[]>(new URL('/rest/v1/rpc/redraw_event_prize', supabaseUrl).href, {
         method: 'POST',
-        headers: { ...headers, Prefer: 'resolution=merge-duplicates,return=representation' },
+        headers,
         body: {
-          event_id: eventId, line_user_id: userId, ...profile,
-          prize_id: choosePrize(), drawn_at: new Date().toISOString(), redeemed_at: null,
+          p_event_id: eventId, p_user_id: userId,
+          p_user_name: profile.user_name, p_prize_id: choosePrize(),
         },
       })
       return draw

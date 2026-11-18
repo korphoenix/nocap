@@ -6,10 +6,10 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    await $fetch(new URL('/rest/v1/event_draws', supabaseUrl).href, {
-      method: 'DELETE',
+    await $fetch(new URL('/rest/v1/rpc/clear_event_draws', supabaseUrl).href, {
+      method: 'POST',
       headers: { apikey: supabaseSecretKey },
-      query: { event_id: 'eq.' + eventId },
+      body: { p_event_id: eventId },
       timeout: 8000,
     })
     return { ok: true }

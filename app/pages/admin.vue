@@ -2,6 +2,7 @@
 useSeoMeta({ title: 'NOCAP 活動後台', robots: 'noindex, nofollow' })
 
 type RecordRow = {
+  record_id: string
   line_user_id: string
   user_name: string | null
   prizeName: string
@@ -123,7 +124,7 @@ function logout() {
         <table>
           <thead><tr><th scope="col">LINE 使用者</th><th scope="col">獎品</th><th scope="col">首次進入網站</th><th scope="col">抽獎時間</th><th scope="col">核銷狀態</th></tr></thead>
           <tbody>
-            <tr v-for="row in records.rows" :key="row.line_user_id">
+            <tr v-for="row in records.rows" :key="row.record_id">
               <td>{{ row.user_name || '未提供名稱' }}<small>{{ row.line_user_id }}</small></td>
               <td>{{ row.prizeName }}</td>
               <td>{{ row.first_login_at ? dateFormat.format(new Date(row.first_login_at)) : '未記錄' }}</td>
