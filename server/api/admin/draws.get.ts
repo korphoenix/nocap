@@ -33,7 +33,16 @@ export default defineEventHandler(async (event) => {
       },
       timeout: 8000,
     })
-    const rows = (response._data ?? []).map(row => ({
+    const draws = response._data ?? []
+    const users = draws.length ? await $fetch<{ line_user_id: string; first_login_at: string }[]>(
+      new URL('/rest/v1/line_users', supabaseUrl).href, {
+        headers: { apikey: supabaseSecretKey },
+        query: { select: 'line_user_id,first_login_at', line_user_id: 'in.(' + draws.map(row => row.line_user_id).join(',') + ')' },
+        timeout: 8000,
+      },
+    ) : []
+    const rows = draws.map(row => ({
+      first_login_at: users.find(user => user.line_user_id === row.line_user_id)?.first_login_at ?? null,
       ...row,
       prizeName: prizes.find(prize => prize.id === row.prize_id)?.name ?? row.prize_id,
     }))

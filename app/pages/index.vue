@@ -83,7 +83,7 @@ function layerStyle(layer: (typeof poster.layers)[number]) {
     height: `${layer.height / height * 100}%`,
     zIndex: layer.z,
     ...(['open_text', 'frequency_text'].includes(layer.name) ? {
-      maskImage: `url("${asset(layer.file.replace('.png', '-mask.svg'))}")`,
+      maskImage: `url("${asset(layer.file.replace(/\.(png|webp)$/, '-mask.svg'))}")`,
       maskSize: '100% 100%',
       maskRepeat: 'no-repeat',
     } : {}),
@@ -91,7 +91,17 @@ function layerStyle(layer: (typeof poster.layers)[number]) {
 }
 
 function resizePrize() {
-  if (dialog.value?.open) scale.value = dialog.value.clientWidth / 793
+  if (!dialog.value?.open) return
+  const viewport = window.visualViewport
+  const availableWidth = viewport?.width ?? window.innerWidth
+  const availableHeight = viewport?.height ?? window.innerHeight
+  scale.value = Math.min((availableWidth - 24) / 793, (availableHeight - 24) / 1210, 1)
+  Object.assign(dialog.value.style, {
+    width: `${793 * scale.value}px`,
+    height: `${1210 * scale.value}px`,
+    left: `${(viewport?.offsetLeft ?? 0) + availableWidth / 2}px`,
+    top: `${(viewport?.offsetTop ?? 0) + availableHeight / 2}px`,
+  })
 }
 
 async function openPrize() {
@@ -155,6 +165,8 @@ onMounted(async () => {
   if (!prizeId.value) return
   await nextTick()
   window.addEventListener('resize', resizePrize)
+  window.visualViewport?.addEventListener('resize', resizePrize)
+  window.visualViewport?.addEventListener('scroll', resizePrize)
   window.addEventListener('message', onPrizeMessage)
 
   if (!posterElement.value || !motionAllowed()) return
@@ -236,6 +248,8 @@ onBeforeUnmount(() => {
   entrance?.revert()
   prizeTween?.revert()
   window.removeEventListener('resize', resizePrize)
+  window.visualViewport?.removeEventListener('resize', resizePrize)
+  window.visualViewport?.removeEventListener('scroll', resizePrize)
   window.removeEventListener('message', onPrizeMessage)
 })
 </script>
@@ -278,7 +292,7 @@ onBeforeUnmount(() => {
   </main>
 
   <div v-if="loading" class="opening-overlay" role="status">
-    <div class="opening-card" :style="{ backgroundImage: `url('${asset('assets/00_background.png')}')` }">
+    <div class="opening-card" :style="{ backgroundImage: `url('${asset('assets/00_background.webp')}')` }">
       <span class="opening-brand">NOCAP</span>
       <strong>GRAND<br>OPENING</strong>
       <span class="opening-progress" aria-hidden="true" />
@@ -343,8 +357,8 @@ body { margin: 0; background: #202020; }
   .poster:has(.unlock:active) .piece[data-motion-button] { translate: 0 2px; filter: brightness(0.92); }
   .piece[data-motion-button] { transition: translate 120ms ease-out, filter 120ms ease-out; }
 }
-.prize-dialog { box-sizing: border-box; width: min(96vw, calc(94dvh * 793 / 1210), 793px); max-width: none; max-height: none; aspect-ratio: 793 / 1210; padding: 0; border: 0; background: transparent; overflow: hidden; }
+.prize-dialog { position: fixed; inset: auto; margin: 0; translate: -50% -50%; box-sizing: border-box; width: min(96vw, calc(94dvh * 793 / 1210), 793px); max-width: none; max-height: none; aspect-ratio: 793 / 1210; padding: 0; border: 0; background: transparent; overflow: hidden; }
 .prize-dialog::backdrop { background: #000b; }
-.prize-frame { display: block; width: 793px; height: 1210px; border: 0; transform-origin: top left; }
+.prize-frame { position: absolute; inset: 0; display: block; width: 793px; height: 1210px; border: 0; transform-origin: top left; }
 .prize-error { position: fixed; bottom: 12px; left: 12px; z-index: 100; background: white; padding: 8px; }
 </style>
