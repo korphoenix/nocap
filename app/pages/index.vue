@@ -31,6 +31,7 @@ const posterElement = ref<HTMLElement>()
 const dialog = ref<HTMLDialogElement>()
 const frame = ref<HTMLIFrameElement>()
 const frameURL = ref('')
+let frameLoaded: (() => void) | undefined
 const scale = ref(1)
 const loading = ref(false)
 const prizeId = ref('')
@@ -119,14 +120,41 @@ async function openPrize() {
 
     const query = new URLSearchParams({ prize: prizeId.value, paper: '1' })
     if (redeemed.value) query.set('redeemed', '1')
+    const ready = new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        frameLoaded = undefined
+        reject(new Error('Prize loading timed out'))
+      }, 20000)
+      frameLoaded = () => { clearTimeout(timeout); resolve() }
+    })
     frameURL.value = asset(`redemption/result.html?${query}`)
+    await ready
+    if (!dialog.value || disposed) return
     dialog.value.showModal()
     resizePrize()
-    if (!redeemed.value) animatePrize(dialog.value)
+    animatePrize(dialog.value)
+    frame.value?.contentWindow?.postMessage('start-prize-motion', location.origin)
   } catch {
     prizeError.value = true
   } finally {
     loading.value = false
+  }
+}
+
+async function onFrameLoad() {
+  try {
+    const view = frame.value?.contentWindow as (Window & { ready?: Promise<void> }) | null
+    const doc = frame.value?.contentDocument
+    if (!view || !doc) return
+    await Promise.all([
+      view.ready,
+      doc.fonts.ready,
+      ...Array.from(doc.images, image => image.decode()),
+    ])
+    frameLoaded?.()
+    frameLoaded = undefined
+  } catch {
+    prizeError.value = true
   }
 }
 
@@ -270,6 +298,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <div v-if="!imagesReady && !prizeError" class="page-loader" role="status" aria-label="載入活動中">
+    <img :src="asset('assets/loading-logo.webp')" alt="" width="160" height="80" fetchpriority="high">
+  </div>
   <main v-if="prizeId" ref="posterElement" class="poster" :class="{ 'poster-loading': !imagesReady }" :inert="!imagesReady" :aria-busy="!imagesReady" aria-label="NOCAP Open Frequency 活動海報">
     <span v-for="(group, y) in { 580: 'instructions', 1040: 'playlists', 1305: 'vibes', 1454: 'groove', 1605: 'hyped', 1719: 'footer-photo' }"
       :key="group" class="reveal-marker" :data-reveal="group" :style="{ top: `${Number(y) / height * 100}%` }" aria-hidden="true" />
@@ -322,6 +353,7 @@ onBeforeUnmount(() => {
       v-if="frameURL"
       ref="frame"
       class="prize-frame"
+      @load="onFrameLoad"
       :src="frameURL"
       :style="{ transform: `scale(${scale})` }"
       title="獎品與兌換畫面"
@@ -332,6 +364,26 @@ onBeforeUnmount(() => {
 <style>
 body { margin: 0; background: #202020; }
 .poster { position: relative; width: min(801px, 100%); aspect-ratio: 801 / 1900; margin: auto; isolation: isolate; overflow: hidden; }
+.page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: grid;
+  place-items: center;
+  background: #202020;
+}
+.page-loader img {
+  display: block;
+  width: min(160px, 42vw);
+  height: auto;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .page-loader img { animation: page-loading 1200ms ease-in-out infinite alternate; }
+}
+@keyframes page-loading {
+  from { opacity: .6; transform: scale(.96); }
+  to { opacity: 1; transform: scale(1); }
+}
 .poster-loading { visibility: hidden; }
 .piece { position: absolute; display: block; }
 .photo { object-fit: cover; }

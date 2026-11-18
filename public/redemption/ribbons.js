@@ -40,12 +40,20 @@
   });
   source.replaceWith(root);
   if (skipReveal) return;
-  // Start content and ribbons on the same clock after prize layout and images load.
-  const ready = [window.ready, ...Array.from(root.querySelectorAll('img'), img => img.decode())];
-  Promise.allSettled(ready).then(() => {
-    requestAnimationFrame(() => {
-      document.documentElement.classList.remove('motion-pending');
-      document.documentElement.classList.add('motion-ready');
+  // The parent starts motion only after image decoding and popup positioning.
+  const start = () => {
+    document.documentElement.classList.remove('motion-pending');
+    document.documentElement.classList.add('motion-ready');
+  };
+  if (self === top) {
+    Promise.allSettled([
+      window.ready,
+      document.fonts.ready,
+      ...Array.from(document.images, img => img.decode()),
+    ]).then(start);
+  } else {
+    window.addEventListener('message', event => {
+      if (event.source === parent && event.origin === location.origin && event.data === 'start-prize-motion') start();
     });
-  });
+  }
 })();
