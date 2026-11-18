@@ -136,26 +136,17 @@ function ribbonStyle(ribbon: typeof ribbons[number], index: number) {
     <a class="result-ig" href="https://www.instagram.com/nocap_taipei" target="_blank" rel="noopener noreferrer">兌換前，請先追蹤 NOCAP IG ↗</a>
     <div class="redeem-area">
       <output v-if="redeemed">已兌換</output>
-      <button v-else type="button" :disabled="showForm || submitting" @click="openForm">兌換驚喜</button>
+      <form v-else-if="showForm" @submit.prevent="redeem">
+        <label for="staff-pin">店員輸入兌換密碼</label>
+        <input id="staff-pin" ref="input" v-model="pin" type="password" inputmode="numeric" autocomplete="off" :disabled="submitting" required>
+        <button type="submit" :disabled="submitting || !pin">{{ submitting ? '確認中…' : '確認' }}</button>
+      </form>
+      <button v-else type="button" @click="openForm">兌換驚喜</button>
     </div>
     <div class="ig-note">兌換時請同時出示 IG 追蹤畫面</div>
     <div class="instructions" aria-live="polite">{{ instructions }}</div>
     <div class="footer">每人一次・當日兌換</div>
-    <div v-if="showForm && !redeemed" class="staff-overlay">
-      <section class="staff-panel" aria-label="店員核銷">
-        <form @submit.prevent="redeem">
-          <h2>店員核銷</h2>
-          <p class="staff-prize">{{ prize?.name }}</p>
-          <label for="staff-pin">店員密碼</label>
-          <input id="staff-pin" ref="input" v-model="pin" type="password" autocomplete="off" :disabled="submitting" required>
-          <p v-if="message" role="alert">{{ message }}</p>
-          <button type="submit" :disabled="submitting || !delivered || !pin">
-            {{ submitting ? '核銷中…' : '確認核銷' }}
-          </button>
-          <button type="button" class="cancel" :disabled="submitting" @click="showForm = false; pin = ''; message = ''">取消</button>
-        </form>
-      </section>
-    </div>
+
   </div>
 </template>
 
@@ -253,26 +244,7 @@ function ribbonStyle(ribbon: typeof ribbons[number], index: number) {
 .redeem-area { font-family: NocapPrize, sans-serif; }
 .result-ig { font-family: NocapPrize, sans-serif; }
 .cross { border: 0; background: transparent; }
-.staff-overlay {
-  left: 0; top: 520px; width: 793px; height: 1210px;
-  z-index: 10; display: grid; place-items: center; background: #10152b80;
-}
-.staff-panel {
-  width: 590px; padding: 30px; border-radius: 24px; background: #fffdf8;
-  color: #152049; font-family: NocapPrize, sans-serif; font-size: 26px;
-  box-shadow: 0 12px 40px #0004;
-}
-.staff-panel h2 { font-size: 36px; margin: 0 0 16px; }
-.staff-panel p { margin: 12px 0 20px; }
-.staff-panel button {
-  display: block; width: 100%; padding: 18px; border: 0; border-radius: 14px;
-  background: #0739f6; color: white; font: inherit; font-weight: 700; cursor: pointer;
-}
-.staff-panel .cancel { margin-top: 12px; background: #e9ecf7; color: #152049; }
-.staff-panel button:disabled { opacity: .45; cursor: default; }
-.staff-panel input[type="password"] { width: 100%; padding: 12px; margin: 10px 0; font: inherit; border: 2px solid #9caad2; border-radius: 10px; }
-.staff-panel [role="alert"] { color: #b22236; }
-.staff-prize { font-weight: 700; }
+.redeem-area button:disabled { opacity: .5; cursor: default; }
 /* Images never receive a focus ring; pointer focus on the close button stays unobtrusive. */
 .sheet img { outline: none; border: 0; -webkit-tap-highlight-color: transparent; }
 .cross:focus:not(:focus-visible) { outline: none; }
