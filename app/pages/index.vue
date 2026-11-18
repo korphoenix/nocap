@@ -130,17 +130,24 @@ function onPrizeMessage(event: MessageEvent) {
 
 async function prepareDraw() {
   try {
+    if (String(useRuntimeConfig().public.liffMock) !== 'true') {
+      const liffId = useRuntimeConfig().public.liffId.trim()
+      if (!liffId) throw new Error('Missing LIFF ID')
+      const { default: liff } = await import('@line/liff')
+      // Complete the LIFF callback at its original endpoint before changing URLs.
+      await liff.init({ liffId, withLoginOnExternalBrowser: true })
+      if (!liff.isLoggedIn()) return
+      const token = liff.getIDToken()
+      if (!token) throw new Error('Missing LINE ID token')
+      await $fetch(asset('api/line/session'), { method: 'POST', body: { token } })
+    }
+
     const draw = await $fetch<{ prizeId: string; redeemed: boolean }>(asset('api/prize/draw'), { method: 'POST' })
     redeemed.value = draw.redeemed
     prizeId.value = draw.prizeId
-  } catch (error) {
-    if ((error as { statusCode?: number }).statusCode === 401) {
-      await navigateTo('/line-login')
-      return
-    }
+  } catch {
     prizeError.value = true
   }
-
 }
 
 onMounted(async () => {
