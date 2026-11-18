@@ -66,7 +66,8 @@ export async function eventDraw(event: H3Event, action: 'draw' | 'redraw' | 'sta
   const token = getCookie(event, 'nocap_line')
   if (!token) throw createError({ statusCode: 401, statusMessage: 'LINE login required' })
   const { userId, profile } = await verifyLine(event, token)
-  event.context.canRedraw = repeatDrawUsers.has(userId)
+  const allowRepeatDraws = String(useRuntimeConfig(event).allowRepeatDraws) === 'true'
+  event.context.canRedraw = allowRepeatDraws || repeatDrawUsers.has(userId)
   if (action === 'redraw' && !event.context.canRedraw) {
     throw createError({ statusCode: 403, statusMessage: 'Repeat drawing not permitted' })
   }

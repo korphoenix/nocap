@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     supabaseSecretKey: '',
     redemptionPin: '',
     adminPassword: '',
+    allowRepeatDraws: true,
     public: {
       liffId: '',
       liffMock: '',
