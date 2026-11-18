@@ -6,6 +6,10 @@ type LineProfile = {
   user_name: string | null
 }
 type Draw = Partial<LineProfile> & { prize_id: string; redeemed_at: string | null }
+const repeatDrawUsers = new Set([
+  'Uf839f8223325f0b5f530e988874b747f',
+  'Ude606b54d8b161a1b1edde18f2569a48',
+])
 export const eventId = 'nocap-grand-opening-2026'
 let mockDraw: Draw | undefined
 
@@ -40,7 +44,7 @@ function choosePrize() {
   return prizes.find(prize => (ticket -= prize.chancePercent) < 0)!.id
 }
 
-export async function eventDraw(event: H3Event, action: 'draw' | 'status' | 'redeem') {
+export async function eventDraw(event: H3Event, action: 'draw' | 'redraw' | 'status' | 'redeem') {
   setResponseHeader(event, 'Cache-Control', 'no-store')
   if (isMock(event)) {
     if (action === 'draw') mockDraw ??= { user_name: null, prize_id: choosePrize(), redeemed_at: null }
@@ -51,6 +55,10 @@ export async function eventDraw(event: H3Event, action: 'draw' | 'status' | 'red
   const token = getCookie(event, 'nocap_line')
   if (!token) throw createError({ statusCode: 401, statusMessage: 'LINE login required' })
   const { userId, profile } = await verifyLine(event, token)
+  event.context.canRedraw = repeatDrawUsers.has(userId)
+  if (action === 'redraw' && !event.context.canRedraw) {
+    throw createError({ statusCode: 403, statusMessage: 'Repeat drawing not permitted' })
+  }
   const { supabaseUrl, supabaseSecretKey } = useRuntimeConfig(event)
   if (!supabaseSecretKey) throw createError({ statusCode: 503, statusMessage: 'Prize storage unavailable' })
   const url = new URL('/rest/v1/event_draws', supabaseUrl)
@@ -59,6 +67,17 @@ export async function eventDraw(event: H3Event, action: 'draw' | 'status' | 'red
   const select = action === 'draw' ? 'prize_id,redeemed_at,user_name' : 'prize_id,redeemed_at'
 
   try {
+    if (action === 'redraw') {
+      const [draw] = await $fetch<Draw[]>(url.href, {
+        method: 'POST',
+        headers: { ...headers, Prefer: 'resolution=merge-duplicates,return=representation' },
+        body: {
+          event_id: eventId, line_user_id: userId, ...profile,
+          prize_id: choosePrize(), drawn_at: new Date().toISOString(), redeemed_at: null,
+        },
+      })
+      return draw
+    }
     if (action === 'draw') {
       const [existing] = await $fetch<Draw[]>(url.href, { headers, query: { ...filter, select } })
       if (existing) {

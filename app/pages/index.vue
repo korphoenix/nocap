@@ -39,6 +39,8 @@ const prizeId = ref('')
 const imagesReady = ref(false)
 let disposed = false
 const redeemed = ref(false)
+const canRedraw = ref(false)
+const openingPrize = ref(false)
 const prizeError = ref(false)
 const posterLinks = [
   { label: '追蹤 NOCAP IG', href: 'https://www.instagram.com/nocap_taipei', x: 130, y: 858, w: 541, h: 69 },
@@ -109,11 +111,19 @@ function resizePrize() {
 }
 
 async function openPrize() {
-  if (loading.value || !prizeId.value || !dialog.value) return
+  if (openingPrize.value || !prizeId.value || !dialog.value) return
+  openingPrize.value = true
   prizeError.value = false
-  loading.value = !redeemed.value
+  loading.value = canRedraw.value || !redeemed.value
 
   try {
+    if (canRedraw.value) {
+      const draw = await $fetch<{ prizeId: string; redeemed: boolean }>(asset('api/prize/draw'), {
+        method: 'POST', body: { redraw: true },
+      })
+      prizeId.value = draw.prizeId
+      redeemed.value = draw.redeemed
+    }
     if (loading.value) {
       await new Promise<void>(resolve => setTimeout(resolve, motionAllowed() ? 780 : 120))
     }
@@ -143,6 +153,7 @@ async function openPrize() {
     prizeError.value = true
   } finally {
     loading.value = false
+    openingPrize.value = false
   }
 }
 
@@ -171,7 +182,8 @@ async function prepareDraw() {
       await $fetch(asset('api/line/session'), { method: 'POST', body: { token } })
     }
 
-    const draw = await $fetch<{ prizeId: string; redeemed: boolean }>(asset('api/prize/draw'), { method: 'POST' })
+    const draw = await $fetch<{ prizeId: string; redeemed: boolean; canRedraw: boolean }>(asset('api/prize/draw'), { method: 'POST' })
+    canRedraw.value = draw.canRedraw
     redeemed.value = draw.redeemed
     prizeId.value = draw.prizeId
   } catch {
