@@ -42,6 +42,7 @@ const redeemed = ref(false)
 const canRedraw = ref(false)
 const openingPrize = ref(false)
 const prizeError = ref(false)
+const entryError = ref('')
 const posterLinks = [
   { label: '追蹤 NOCAP IG', href: 'https://www.instagram.com/nocap_taipei', x: 130, y: 858, w: 541, h: 69 },
   { label: '在 Spotify 播放 Vibes', href: 'https://open.spotify.com/playlist/7ohRWKojfu3YCK6A3Eb3e6?si=cbb862bda99843c6', x: 33, y: 1305, w: 736, h: 119 },
@@ -169,6 +170,7 @@ function resetResult() {
 }
 
 async function prepareDraw() {
+  let stage = 'LINE 初始化'
   try {
     if (String(useRuntimeConfig().public.liffMock) !== 'true') {
       const liffId = useRuntimeConfig().public.liffId.trim()
@@ -177,16 +179,21 @@ async function prepareDraw() {
       // Complete the LIFF callback at its original endpoint before changing URLs.
       await liff.init({ liffId, withLoginOnExternalBrowser: true })
       if (!liff.isLoggedIn()) return
+      stage = 'LINE 身分憑證'
       const token = liff.getIDToken()
       if (!token) throw new Error('Missing LINE ID token')
+      stage = 'LINE 後端登入'
       await $fetch(asset('api/line/session'), { method: 'POST', body: { token } })
     }
 
+    stage = '獎品紀錄讀取'
     const draw = await $fetch<{ prizeId: string; redeemed: boolean; canRedraw: boolean }>(asset('api/prize/draw'), { method: 'POST' })
     canRedraw.value = draw.canRedraw
     redeemed.value = draw.redeemed
     prizeId.value = draw.prizeId
-  } catch {
+  } catch (error) {
+    const status = (error as { statusCode?: number }).statusCode
+    entryError.value = `${stage}失敗${status ? '（' + status + '）' : ''}，請重新開啟活動連結。`
     prizeError.value = true
   }
 }
@@ -207,7 +214,10 @@ onMounted(async () => {
       document.fonts.ready,
     ])
   } catch {
-    if (!disposed) prizeError.value = true
+    if (!disposed) {
+      entryError.value = '活動圖片載入失敗，請重新整理頁面。'
+      prizeError.value = true
+    }
     return
   }
   if (disposed) return
@@ -347,7 +357,7 @@ onBeforeUnmount(() => {
     </div>
   </div>
 
-  <p v-if="prizeError" class="prize-error" role="alert">暫時無法載入獎品，請再試一次。</p>
+  <p v-if="prizeError" class="prize-error" role="alert">{{ entryError || '暫時無法載入獎品，請再試一次。' }}</p>
 
   <dialog ref="dialog" class="prize-dialog" tabindex="-1" autofocus @close="resetResult" aria-label="今晚的驚喜">
     <div class="prize-content" :style="{ transform: `scale(${scale})` }">

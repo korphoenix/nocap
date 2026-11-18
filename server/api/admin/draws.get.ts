@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
     const users = draws.length ? await $fetch<{ line_user_id: string; first_login_at: string }[]>(
       new URL('/rest/v1/line_users', supabaseUrl).href, {
         headers: { apikey: supabaseSecretKey },
-        query: { select: 'record_id,line_user_id,first_login_at', line_user_id: 'in.(' + draws.map(row => row.line_user_id).join(',') + ')' },
+        query: { select: 'line_user_id,first_login_at', line_user_id: 'in.(' + draws.map(row => row.line_user_id).join(',') + ')' },
         timeout: 8000,
       },
     ) : []
