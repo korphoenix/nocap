@@ -121,7 +121,7 @@ function logout() {
       <p v-if="!records.rows.length">目前沒有符合條件的紀錄。</p>
       <div v-else class="table-scroll">
         <table>
-          <thead><tr><th scope="col">LINE 使用者</th><th scope="col">獎品</th><th scope="col">首次 LINE 登入</th><th scope="col">抽獎時間</th><th scope="col">核銷狀態</th></tr></thead>
+          <thead><tr><th scope="col">LINE 使用者</th><th scope="col">獎品</th><th scope="col">首次進入網站</th><th scope="col">抽獎時間</th><th scope="col">核銷狀態</th></tr></thead>
           <tbody>
             <tr v-for="row in records.rows" :key="row.line_user_id">
               <td>{{ row.user_name || '未提供名稱' }}<small>{{ row.line_user_id }}</small></td>
