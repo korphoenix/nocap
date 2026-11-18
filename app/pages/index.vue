@@ -70,12 +70,12 @@ function entranceGroup(layer: (typeof poster.layers)[number]) {
 }
 
 function animatePrize(element: HTMLDialogElement) {
-  prizeTween?.revert()
+  prizeTween?.kill()
   if (!motionAllowed()) return
 
   prizeTween = gsap.fromTo(element,
-    { opacity: 0, y: 14, scale: 0.97 },
-    { opacity: 1, y: 0, scale: 1, duration: 0.32, ease: 'power2.out', clearProps: 'opacity,transform' },
+    { opacity: 0 },
+    { opacity: 1, duration: 0.28, ease: 'power2.out', clearProps: 'opacity' },
   )
 }
 
@@ -127,10 +127,17 @@ async function openPrize() {
     resultMounted.value = true
     await ready
     if (!dialog.value || disposed) return
+    prizeTween?.kill()
+    dialog.value.style.opacity = '0'
     dialog.value.showModal()
     resizePrize()
-    animatePrize(dialog.value)
+    await nextTick()
+    // Let the mobile browser commit the final popup bounds before revealing it.
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
+    if (disposed || !dialog.value?.open) return
     resultActive.value = true
+    if (motionAllowed()) animatePrize(dialog.value)
+    else dialog.value.style.opacity = '1'
   } catch {
     resetResult()
     prizeError.value = true
@@ -198,19 +205,19 @@ onMounted(async () => {
     const timeline = gsap.timeline()
     timeline
       .fromTo('[data-entrance="hero"]', { opacity: 0 }, { opacity: 1, duration: 0.45 }, 0)
-      .fromTo('[data-entrance="title"]', { opacity: 0, x: -16, y: 10 }, {
-        opacity: 1, x: 0, y: 0, duration: 0.58, ease: 'power3.out', clearProps: 'opacity,transform',
-      }, 0.05)
+      .fromTo('[data-entrance="title"]', { opacity: 0, x: -24, y: 16 }, {
+        opacity: 1, x: 0, y: 0, duration: 0.72, stagger: (_, target) => Number(target.dataset.enterStep || 0), ease: 'power3.out', clearProps: 'opacity,transform',
+      }, 0.12)
       .fromTo('[data-entrance="collage"]', { opacity: 0, x: -9, y: 18 }, {
-        opacity: 1, x: 0, y: 0, duration: 0.56, ease: 'power3.out', clearProps: 'opacity,transform',
-      }, 0.18)
+        opacity: 1, x: 0, y: 0, duration: 0.65, stagger: (_, target) => Number(target.dataset.enterStep || 0), ease: 'power3.out', clearProps: 'opacity,transform',
+      }, 0.30)
       .fromTo('[data-entrance="logo"]', { opacity: 0, scale: 0.86 }, {
         opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.5)', clearProps: 'opacity,transform',
-      }, 0.28)
+      }, 0.66)
       .fromTo('[data-entrance="date"]', { opacity: 0, y: 16 }, {
         opacity: 1, y: 0, duration: 0.48, ease: 'power3.out', clearProps: 'opacity,transform',
-      }, 0.39)
-      .fromTo('[data-entrance="hero-photo"]', { opacity: 0 }, { opacity: 1, duration: 0.45 }, 0.4)
+      }, 0.88)
+      .fromTo('[data-entrance="hero-photo"]', { opacity: 0 }, { opacity: 1, duration: 0.6 }, 0.54)
 
     gsap.to('[data-sway="carabiner"]', {
       rotation: 1.8, transformOrigin: 'center center', duration: 2.1,
@@ -280,6 +287,7 @@ onBeforeUnmount(() => {
 <template>
   <div v-if="!imagesReady && !prizeError" class="page-loader" role="status" aria-label="載入活動中">
     <img :src="asset('assets/loading-logo.webp')" alt="" width="160" height="80" fetchpriority="high">
+    <span class="loading-label">loading ..</span>
   </div>
   <main v-if="prizeId" ref="posterElement" class="poster" :class="{ 'poster-loading': !imagesReady }" :inert="!imagesReady" :aria-busy="!imagesReady" aria-label="NOCAP Open Frequency 活動海報">
     <span v-for="(group, y) in { 580: 'instructions', 1040: 'playlists', 1305: 'vibes', 1454: 'groove', 1605: 'hyped', 1719: 'footer-photo' }"
@@ -291,6 +299,7 @@ onBeforeUnmount(() => {
       :class="{ photo: layer.name.startsWith('photo_') }"
       :src="asset(layer.file)"
       :data-entrance="entranceGroup(layer)"
+      :data-enter-step="layer.name.startsWith('frequency_') ? 0.2 : layer.name.startsWith('cable') ? 0.14 : layer.name.startsWith('carabiner') ? 0.28 : 0"
       :data-sway="/^(carabiner|hand|cable)(?:_shadow)?$/.exec(layer.name)?.[1]"
       :data-motion-button="/^button(?:_blank|1_)/.test(layer.name) ? '' : undefined"
       :style="layerStyle(layer)"
@@ -328,7 +337,7 @@ onBeforeUnmount(() => {
 
   <p v-if="prizeError" class="prize-error" role="alert">暫時無法載入獎品，請再試一次。</p>
 
-  <dialog ref="dialog" class="prize-dialog" @close="resetResult" aria-label="今晚的驚喜">
+  <dialog ref="dialog" class="prize-dialog" tabindex="-1" autofocus @close="resetResult" aria-label="今晚的驚喜">
     <div class="prize-content" :style="{ transform: `scale(${scale})` }">
       <PrizeResult
         v-if="resultMounted"
@@ -353,8 +362,11 @@ body { margin: 0; background: #202020; }
   z-index: 110;
   display: grid;
   place-items: center;
+  align-content: center;
+  gap: 18px;
   background: #202020;
 }
+.loading-label { color: #fff; font: 400 13px/1.4 system-ui, sans-serif; letter-spacing: .12em; }
 .page-loader img {
   display: block;
   width: min(160px, 42vw);

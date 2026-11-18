@@ -9,9 +9,8 @@ const asset = (name: string) => app.baseURL + 'redemption/assets/' + name
 const root = ref<HTMLElement>()
 const product = ref<HTMLImageElement>()
 const submitting = ref(false)
+const revealMotion = !props.redeemed
 const showForm = ref(false)
-const staffNotice = ref(false)
-const delivered = ref(false)
 const pin = ref('')
 const message = ref('')
 const input = ref<HTMLInputElement>()
@@ -23,14 +22,13 @@ const instructions = computed(() => message.value || (props.redeemed
 let disposed = false
 
 async function openForm() {
-  staffNotice.value = false
   showForm.value = true
   await nextTick()
   input.value?.focus()
 }
 
 async function redeem() {
-  if (submitting.value || props.redeemed || !delivered.value || !pin.value) return
+  if (submitting.value || props.redeemed || !pin.value) return
   submitting.value = true
   message.value = ''
   try {
@@ -41,7 +39,6 @@ async function redeem() {
   } catch (error) {
     const status = (error as { statusCode?: number }).statusCode
     pin.value = ''
-    delivered.value = false
     message.value = status === 403 ? '密碼不正確，請重新輸入。'
       : status === 401 ? 'LINE 登入已過期，請重新整理活動頁後再試。'
       : status === 404 ? '找不到抽獎紀錄，請重新整理活動頁後再試。'
@@ -112,7 +109,7 @@ function ribbonStyle(ribbon: typeof ribbons[number], index: number) {
 </script>
 
 <template>
-  <div ref="root" class="sheet" :class="{ 'motion-ready': active && !redeemed, 'motion-pending': !active }">
+  <div ref="root" class="sheet" :class="{ 'motion-ready': active && revealMotion, 'motion-pending': !active }">
     <img class="background" :src="asset('paper.webp')" alt="">
     <button class="cross" type="button" aria-label="關閉" @click="emit('close')" />
     <div class="headline" :class="{ special }">
@@ -139,33 +136,23 @@ function ribbonStyle(ribbon: typeof ribbons[number], index: number) {
     <a class="result-ig" href="https://www.instagram.com/nocap_taipei" target="_blank" rel="noopener noreferrer">兌換前，請先追蹤 NOCAP IG ↗</a>
     <div class="redeem-area">
       <output v-if="redeemed">已兌換</output>
-      <button v-else type="button" @click="staffNotice = true">兌換驚喜</button>
+      <button v-else type="button" :disabled="showForm || submitting" @click="openForm">兌換驚喜</button>
     </div>
     <div class="ig-note">兌換時請同時出示 IG 追蹤畫面</div>
     <div class="instructions" aria-live="polite">{{ instructions }}</div>
     <div class="footer">每人一次・當日兌換</div>
-    <div v-if="(staffNotice || showForm) && !redeemed" class="staff-overlay">
+    <div v-if="showForm && !redeemed" class="staff-overlay">
       <section class="staff-panel" aria-label="店員核銷">
-        <template v-if="staffNotice">
-          <h2>請將手機交給店員</h2>
-          <p>由店員確認獎品與 IG 追蹤畫面後，輸入密碼完成核銷。</p>
-          <button type="button" @click="openForm">我是店員，繼續核銷</button>
-          <button type="button" class="cancel" @click="staffNotice = false">稍後兌換</button>
-        </template>
-        <form v-else @submit.prevent="redeem">
+        <form @submit.prevent="redeem">
           <h2>店員核銷</h2>
           <p class="staff-prize">{{ prize?.name }}</p>
           <label for="staff-pin">店員密碼</label>
           <input id="staff-pin" ref="input" v-model="pin" type="password" autocomplete="off" :disabled="submitting" required>
-          <label class="delivered">
-            <input v-model="delivered" type="checkbox" :disabled="submitting">
-            已確認獎品交付，完成後無法再次兌換
-          </label>
           <p v-if="message" role="alert">{{ message }}</p>
           <button type="submit" :disabled="submitting || !delivered || !pin">
             {{ submitting ? '核銷中…' : '確認核銷' }}
           </button>
-          <button type="button" class="cancel" :disabled="submitting" @click="showForm = false; pin = ''; delivered = false; message = ''">取消</button>
+          <button type="button" class="cancel" :disabled="submitting" @click="showForm = false; pin = ''; message = ''">取消</button>
         </form>
       </section>
     </div>
@@ -284,8 +271,11 @@ function ribbonStyle(ribbon: typeof ribbons[number], index: number) {
 .staff-panel .cancel { margin-top: 12px; background: #e9ecf7; color: #152049; }
 .staff-panel button:disabled { opacity: .45; cursor: default; }
 .staff-panel input[type="password"] { width: 100%; padding: 12px; margin: 10px 0; font: inherit; border: 2px solid #9caad2; border-radius: 10px; }
-.delivered { display: flex; align-items: flex-start; gap: 12px; margin: 16px 0; }
-.delivered input { width: 28px; height: 28px; flex-shrink: 0; }
 .staff-panel [role="alert"] { color: #b22236; }
 .staff-prize { font-weight: 700; }
+/* Images never receive a focus ring; pointer focus on the close button stays unobtrusive. */
+.sheet img { outline: none; border: 0; -webkit-tap-highlight-color: transparent; }
+.cross:focus:not(:focus-visible) { outline: none; }
+.cross:focus-visible { outline: 2px solid #0739f6; outline-offset: 6px; }
+.sheet { -webkit-tap-highlight-color: transparent; }
 </style>
