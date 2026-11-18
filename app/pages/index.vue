@@ -34,6 +34,8 @@ const frameURL = ref('')
 const scale = ref(1)
 const loading = ref(false)
 const prizeId = ref('')
+const imagesReady = ref(false)
+let disposed = false
 const redeemed = ref(false)
 const prizeError = ref(false)
 const posterLinks = [
@@ -169,8 +171,20 @@ onMounted(async () => {
   window.visualViewport?.addEventListener('scroll', resizePrize)
   window.addEventListener('message', onPrizeMessage)
 
-  if (!posterElement.value || !motionAllowed()) return
   const element = posterElement.value
+  if (!element) return
+  try {
+    await Promise.all([
+      ...Array.from(element.querySelectorAll('img'), image => image.decode()),
+      document.fonts.ready,
+    ])
+  } catch {
+    if (!disposed) prizeError.value = true
+    return
+  }
+  if (disposed) return
+  imagesReady.value = true
+  if (!motionAllowed()) return
   entrance = gsap.context(() => {
     const timeline = gsap.timeline()
     timeline
@@ -244,6 +258,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  disposed = true
   sectionObserver?.disconnect()
   entrance?.revert()
   prizeTween?.revert()
@@ -255,7 +270,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main v-if="prizeId" ref="posterElement" class="poster" aria-label="NOCAP Open Frequency 活動海報">
+  <main v-if="prizeId" ref="posterElement" class="poster" :class="{ 'poster-loading': !imagesReady }" :inert="!imagesReady" :aria-busy="!imagesReady" aria-label="NOCAP Open Frequency 活動海報">
     <span v-for="(group, y) in { 580: 'instructions', 1040: 'playlists', 1305: 'vibes', 1454: 'groove', 1605: 'hyped', 1719: 'footer-photo' }"
       :key="group" class="reveal-marker" :data-reveal="group" :style="{ top: `${Number(y) / height * 100}%` }" aria-hidden="true" />
     <img
@@ -317,6 +332,7 @@ onBeforeUnmount(() => {
 <style>
 body { margin: 0; background: #202020; }
 .poster { position: relative; width: min(801px, 100%); aspect-ratio: 801 / 1900; margin: auto; isolation: isolate; overflow: hidden; }
+.poster-loading { visibility: hidden; }
 .piece { position: absolute; display: block; }
 .photo { object-fit: cover; }
 .reveal-marker { position: absolute; left: 0; width: 1px; height: 1px; pointer-events: none; }
@@ -359,6 +375,15 @@ body { margin: 0; background: #202020; }
 }
 .prize-dialog { position: fixed; inset: auto; margin: 0; translate: -50% -50%; box-sizing: border-box; width: min(96vw, calc(94dvh * 793 / 1210), 793px); max-width: none; max-height: none; aspect-ratio: 793 / 1210; padding: 0; border: 0; background: transparent; overflow: hidden; }
 .prize-dialog::backdrop { background: #000b; }
+.prize-dialog,
+.prize-dialog:focus,
+.prize-dialog:focus-visible,
+.prize-frame,
+.prize-frame:focus,
+.prize-frame:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
 .prize-frame { position: absolute; inset: 0; display: block; width: 793px; height: 1210px; border: 0; transform-origin: top left; }
 .prize-error { position: fixed; bottom: 12px; left: 12px; z-index: 100; background: white; padding: 8px; }
 </style>

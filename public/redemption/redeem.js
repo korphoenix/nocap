@@ -52,7 +52,16 @@ form.addEventListener('submit', async event => {
       password.select();
       return;
     }
-    if (!response.ok || !(await response.json()).redeemed) throw new Error('Redemption failed');
+    if (!response.ok) {
+      const messages = {
+        401: 'LINE 登入已過期，請關閉彈窗並重新整理活動頁後再試。',
+        404: '找不到抽獎紀錄，請重新整理活動頁後再試。',
+        503: '核銷服務目前無法使用，請聯絡活動管理員。',
+      };
+      instructions.textContent = messages[response.status] || '核銷失敗（' + response.status + '），請稍後重試。';
+      return;
+    }
+    if (!(await response.json()).redeemed) throw new Error('Redemption failed');
     showRedeemed();
   } catch {
     instructions.textContent = '暫時無法確認兌換，請再試一次。';
