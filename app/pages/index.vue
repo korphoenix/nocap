@@ -29,9 +29,10 @@ const asset = (path: string) => baseURL + path
 const [width = 801, height = 1900] = poster.canvas
 const posterElement = ref<HTMLElement>()
 const dialog = ref<HTMLDialogElement>()
-const frame = ref<HTMLIFrameElement>()
-const frameURL = ref('')
-let frameLoaded: (() => void) | undefined
+const resultMounted = ref(false)
+const resultActive = ref(false)
+let resultResolve: (() => void) | undefined
+let resultReject: (() => void) | undefined
 const scale = ref(1)
 const loading = ref(false)
 const prizeId = ref('')
@@ -118,43 +119,23 @@ async function openPrize() {
     }
     if (!dialog.value) return
 
-    const query = new URLSearchParams({ prize: prizeId.value, paper: '1' })
-    if (redeemed.value) query.set('redeemed', '1')
     const ready = new Promise<void>((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        frameLoaded = undefined
-        reject(new Error('Prize loading timed out'))
-      }, 20000)
-      frameLoaded = () => { clearTimeout(timeout); resolve() }
+      const timeout = setTimeout(() => reject(new Error('Prize loading timed out')), 20000)
+      resultResolve = () => { clearTimeout(timeout); resolve() }
+      resultReject = () => { clearTimeout(timeout); reject(new Error('Prize loading failed')) }
     })
-    frameURL.value = asset(`redemption/result.html?${query}`)
+    resultMounted.value = true
     await ready
     if (!dialog.value || disposed) return
     dialog.value.showModal()
     resizePrize()
     animatePrize(dialog.value)
-    frame.value?.contentWindow?.postMessage('start-prize-motion', location.origin)
+    resultActive.value = true
   } catch {
+    resetResult()
     prizeError.value = true
   } finally {
     loading.value = false
-  }
-}
-
-async function onFrameLoad() {
-  try {
-    const view = frame.value?.contentWindow as (Window & { ready?: Promise<void> }) | null
-    const doc = frame.value?.contentDocument
-    if (!view || !doc) return
-    await Promise.all([
-      view.ready,
-      doc.fonts.ready,
-      ...Array.from(doc.images, image => image.decode()),
-    ])
-    frameLoaded?.()
-    frameLoaded = undefined
-  } catch {
-    prizeError.value = true
   }
 }
 
@@ -162,10 +143,11 @@ function closePrize() {
   dialog.value?.close()
 }
 
-function onPrizeMessage(event: MessageEvent) {
-  if (event.origin !== location.origin || event.source !== frame.value?.contentWindow) return
-  if (event.data === 'close-result') closePrize()
-  if (event.data === 'prize-redeemed') redeemed.value = true
+function resetResult() {
+  resultMounted.value = false
+  resultActive.value = false
+  resultResolve = undefined
+  resultReject = undefined
 }
 
 async function prepareDraw() {
@@ -197,7 +179,6 @@ onMounted(async () => {
   window.addEventListener('resize', resizePrize)
   window.visualViewport?.addEventListener('resize', resizePrize)
   window.visualViewport?.addEventListener('scroll', resizePrize)
-  window.addEventListener('message', onPrizeMessage)
 
   const element = posterElement.value
   if (!element) return
@@ -293,7 +274,6 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', resizePrize)
   window.visualViewport?.removeEventListener('resize', resizePrize)
   window.visualViewport?.removeEventListener('scroll', resizePrize)
-  window.removeEventListener('message', onPrizeMessage)
 })
 </script>
 
@@ -348,16 +328,19 @@ onBeforeUnmount(() => {
 
   <p v-if="prizeError" class="prize-error" role="alert">暫時無法載入獎品，請再試一次。</p>
 
-  <dialog ref="dialog" class="prize-dialog" @close="frameURL = ''" aria-label="今晚的驚喜">
-    <iframe
-      v-if="frameURL"
-      ref="frame"
-      class="prize-frame"
-      @load="onFrameLoad"
-      :src="frameURL"
-      :style="{ transform: `scale(${scale})` }"
-      title="獎品與兌換畫面"
-    />
+  <dialog ref="dialog" class="prize-dialog" @close="resetResult" aria-label="今晚的驚喜">
+    <div class="prize-content" :style="{ transform: `scale(${scale})` }">
+      <PrizeResult
+        v-if="resultMounted"
+        :prize-id="prizeId"
+        :redeemed="redeemed"
+        :active="resultActive"
+        @ready="resultResolve?.()"
+        @error="resultReject?.()"
+        @close="closePrize"
+        @redeemed="redeemed = true"
+      />
+    </div>
   </dialog>
 </template>
 
@@ -430,12 +413,12 @@ body { margin: 0; background: #202020; }
 .prize-dialog,
 .prize-dialog:focus,
 .prize-dialog:focus-visible,
-.prize-frame,
-.prize-frame:focus,
-.prize-frame:focus-visible {
+.prize-content,
+.prize-content:focus,
+.prize-content:focus-visible {
   outline: none;
   box-shadow: none;
 }
-.prize-frame { position: absolute; inset: 0; display: block; width: 793px; height: 1210px; border: 0; transform-origin: top left; }
+.prize-content { position: absolute; inset: 0; display: block; width: 793px; height: 1210px; border: 0; transform-origin: top left; }
 .prize-error { position: fixed; bottom: 12px; left: 12px; z-index: 100; background: white; padding: 8px; }
 </style>
