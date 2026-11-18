@@ -287,7 +287,7 @@ onBeforeUnmount(() => {
 <template>
   <div v-if="!imagesReady && !prizeError" class="page-loader" role="status" aria-label="載入活動中">
     <img :src="asset('assets/loading-logo.webp')" alt="" width="160" height="80" fetchpriority="high">
-    <span class="loading-label">loading ..</span>
+    <span class="loading-label" aria-hidden="true">Loading <span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></span>
   </div>
   <main v-if="prizeId" ref="posterElement" class="poster" :class="{ 'poster-loading': !imagesReady }" :inert="!imagesReady" :aria-busy="!imagesReady" aria-label="NOCAP Open Frequency 活動海報">
     <span v-for="(group, y) in { 580: 'instructions', 1040: 'playlists', 1305: 'vibes', 1454: 'groove', 1605: 'hyped', 1719: 'footer-photo' }"
@@ -374,6 +374,16 @@ body { margin: 0; background: #202020; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .page-loader img { animation: page-loading 1200ms ease-in-out infinite alternate; }
+}
+.loading-dots span { display: inline-block; }
+@media (prefers-reduced-motion: no-preference) {
+  .loading-dots span { animation: loading-dot 1200ms ease-in-out infinite; }
+  .loading-dots span:nth-child(2) { animation-delay: 150ms; }
+  .loading-dots span:nth-child(3) { animation-delay: 300ms; }
+}
+@keyframes loading-dot {
+  0%, 60%, 100% { opacity: .3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
 }
 @keyframes page-loading {
   from { opacity: .6; transform: scale(.96); }
