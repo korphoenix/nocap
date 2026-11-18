@@ -193,7 +193,14 @@ async function prepareDraw() {
     prizeId.value = draw.prizeId
   } catch (error) {
     const status = (error as { statusCode?: number }).statusCode
-    entryError.value = `${stage}失敗${status ? '（' + status + '）' : ''}，請重新開啟活動連結。`
+    const reason = (error as { data?: { data?: { reason?: string } } }).data?.data?.reason
+    const reasons: Record<string, string> = {
+      LINE_TOKEN_EXPIRED: 'LINE 登入憑證已過期，請關閉頁面後從 LIFF 連結重新進入。',
+      LINE_CHANNEL_MISMATCH: 'LINE 登入 Channel 設定不一致，請聯絡活動管理員。',
+      LINE_TOKEN_INVALID: 'LINE 登入憑證無法驗證，請從 LIFF 連結重新進入。',
+      LINE_VERIFY_UNAVAILABLE: '暫時無法連線至 LINE 驗證服務，請稍後再試。',
+    }
+    entryError.value = reasons[reason || ''] || `${stage}失敗${status ? '（' + status + '）' : ''}，請重新開啟活動連結。`
     prizeError.value = true
   }
 }

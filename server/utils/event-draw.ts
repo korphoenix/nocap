@@ -22,7 +22,8 @@ export async function verifyLine(event: H3Event, token: string) {
   try {
     const identity = await $fetch<{ sub: string; name?: string }>('https://api.line.me/oauth2/v2.1/verify', {
       method: 'POST',
-      body: new URLSearchParams({ id_token: token, client_id: config.lineChannelId }),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ id_token: token, client_id: String(config.lineChannelId).trim() }),
       timeout: 5000,
     })
     if (!identity.sub) throw new Error('Missing subject')
@@ -30,8 +31,18 @@ export async function verifyLine(event: H3Event, token: string) {
       user_name: identity.name?.trim() || null,
     }
     return { userId: identity.sub, profile }
-  } catch {
-    throw createError({ statusCode: 401, statusMessage: 'LINE login required' })
+  } catch (error) {
+    const failure = error as { statusCode?: number; data?: { error_description?: string } }
+    const description = failure.data?.error_description
+    const reason = description === 'IdToken expired.' ? 'LINE_TOKEN_EXPIRED'
+      : description === 'Invalid IdToken Audience.' ? 'LINE_CHANNEL_MISMATCH'
+      : failure.statusCode === 400 || failure.statusCode === 401 ? 'LINE_TOKEN_INVALID'
+      : 'LINE_VERIFY_UNAVAILABLE'
+    throw createError({
+      statusCode: reason === 'LINE_VERIFY_UNAVAILABLE' ? 502 : 401,
+      statusMessage: reason,
+      data: { reason },
+    })
   }
 }
 
