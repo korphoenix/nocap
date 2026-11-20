@@ -6,9 +6,6 @@ type LineProfile = {
   user_name: string | null
 }
 type Draw = Partial<LineProfile> & { prize_id: string; redeemed_at: string | null }
-const repeatDrawUsers = new Set([
-  'Ude606b54d8b161a1b1edde18f2569a48',
-])
 export const eventId = 'nocap-grand-opening-2026'
 let mockDraw: Draw | undefined
 
@@ -66,7 +63,7 @@ export async function eventDraw(event: H3Event, action: 'draw' | 'redraw' | 'sta
   if (!token) throw createError({ statusCode: 401, statusMessage: 'LINE login required' })
   const { userId, profile } = await verifyLine(event, token)
   const allowRepeatDraws = String(useRuntimeConfig(event).allowRepeatDraws) === 'true'
-  event.context.canRedraw = allowRepeatDraws || repeatDrawUsers.has(userId)
+  event.context.canRedraw = allowRepeatDraws
   if (action === 'redraw' && !event.context.canRedraw) {
     throw createError({ statusCode: 403, statusMessage: 'Repeat drawing not permitted' })
   }
