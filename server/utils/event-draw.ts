@@ -7,7 +7,6 @@ type LineProfile = {
 }
 type Draw = Partial<LineProfile> & { prize_id: string; redeemed_at: string | null }
 const repeatDrawUsers = new Set([
-  'Uf839f8223325f0b5f530e988874b747f',
   'Ude606b54d8b161a1b1edde18f2569a48',
 ])
 export const eventId = 'nocap-grand-opening-2026'
