@@ -4,6 +4,7 @@ const pageSize = 50
 
 type Draw = {
   record_id: string
+  source_origin: string | null
   line_user_id: string
   user_name: string | null
   prize_id: string
@@ -25,7 +26,7 @@ export default defineEventHandler(async (event) => {
       headers: { apikey: supabaseSecretKey, Prefer: 'count=exact' },
       query: {
         event_id: 'eq.' + eventId,
-        select: 'record_id,line_user_id,user_name,prize_id,drawn_at,redeemed_at',
+        select: 'source_origin,record_id,line_user_id,user_name,prize_id,drawn_at,redeemed_at',
         order: 'drawn_at.desc,record_id.asc',
         limit: pageSize,
         offset: (page - 1) * pageSize,

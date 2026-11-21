@@ -70,6 +70,7 @@ export async function eventDraw(event: H3Event, action: 'draw' | 'redraw' | 'sta
   const { supabaseUrl, supabaseSecretKey } = useRuntimeConfig(event)
   if (!supabaseSecretKey) throw createError({ statusCode: 503, statusMessage: 'Prize storage unavailable' })
   const url = new URL('/rest/v1/event_draws', supabaseUrl)
+  const sourceOrigin = getRequestURL(event).origin
   const headers = { apikey: supabaseSecretKey }
   const filter = { event_id: 'eq.' + eventId, line_user_id: 'eq.' + userId }
   const select = action === 'draw' ? 'prize_id,redeemed_at,user_name' : 'prize_id,redeemed_at'
@@ -81,7 +82,7 @@ export async function eventDraw(event: H3Event, action: 'draw' | 'redraw' | 'sta
         headers,
         body: {
           p_event_id: eventId, p_user_id: userId,
-          p_user_name: profile.user_name, p_prize_id: choosePrize(),
+          p_user_name: profile.user_name, p_prize_id: choosePrize(), p_source_origin: sourceOrigin,
         },
       })
       return draw
@@ -107,7 +108,7 @@ export async function eventDraw(event: H3Event, action: 'draw' | 'redraw' | 'sta
       await $fetch(url.href, {
         method: 'POST',
         headers: { ...headers, Prefer: 'resolution=ignore-duplicates,return=minimal' },
-        body: { event_id: eventId, line_user_id: userId, ...profile, prize_id: choosePrize() },
+        body: { event_id: eventId, line_user_id: userId, ...profile, source_origin: sourceOrigin, prize_id: choosePrize() },
       })
     }
 
